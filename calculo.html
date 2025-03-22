@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calculadora de Lucro Líquido</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f8f9fa;
+      }
+      h1,
+      h2 {
+        color: #2c3e50;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      .card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        padding: 25px;
+        margin-bottom: 25px;
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 600;
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+        box-sizing: border-box;
+      }
+      textarea {
+        height: 80px;
+        resize: vertical;
+      }
+      select {
+        height: 42px;
+      }
+      .button-container {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+      }
+      button {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        flex-grow: 1;
+        transition: background-color 0.3s;
+      }
+      button:hover {
+        background-color: #2980b9;
+      }
+      button.secondary {
+        background-color: #95a5a6;
+      }
+      button.secondary:hover {
+        background-color: #7f8c8d;
+      }
+      button.danger {
+        background-color: #e74c3c;
+      }
+      button.danger:hover {
+        background-color: #c0392b;
+      }
+      button.success {
+        background-color: #2ecc71;
+      }
+      button.success:hover {
+        background-color: #27ae60;
+      }
+      .results {
+        margin-top: 30px;
+      }
+      .result-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+      }
+      .result-item.total {
+        font-weight: bold;
+        font-size: 18px;
+        color: #2c3e50;
+        border-top: 2px solid #ddd;
+        margin-top: 10px;
+        padding-top: 15px;
+      }
+      .result-value.positive {
+        color: #27ae60;
+      }
+      .result-value.negative {
+        color: #e74c3c;
+      }
+      .hidden {
+        display: none;
+      }
+      .regime-info {
+        margin-top: 5px;
+        color: #7f8c8d;
+        font-size: 14px;
+      }
+      .tooltip {
+        position: relative;
+        display: inline-block;
+        margin-left: 5px;
+        cursor: pointer;
+      }
+      .tooltip-text {
+        font-weight: normal;
+        visibility: hidden;
+        width: 250px;
+        background-color: #34495e;
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        padding: 8px;
+        position: absolute;
+        z-index: 1;
+        bottom: 125%;
+        left: 50%;
+        transform: translateX(-50%);
+        opacity: 0;
+        transition: opacity 0.3s;
+        font-size: 14px;
+      }
+      .tooltip:hover .tooltip-text {
+        visibility: visible;
+        opacity: 1;
+      }
+
+      /* Estilo para a tabela de produtos */
+      .produto-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      .produto-table th,
+      .produto-table td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+      .produto-table th {
+        background-color: #f2f2f2;
+        font-weight: 600;
+      }
+      .produto-table tr:hover {
+        background-color: #f5f5f5;
+      }
+      .action-buttons {
+        display: flex;
+        gap: 5px;
+      }
+      .action-button {
+        padding: 5px 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        color: white;
+      }
+      .edit-button {
+        background-color: #3498db;
+      }
+      .delete-button {
+        background-color: #e74c3c;
+      }
+      .tabs {
+        display: flex;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #ddd;
+      }
+      .tab {
+        padding: 10px 20px;
+        cursor: pointer;
+        border: 1px solid transparent;
+        border-bottom: none;
+        margin-bottom: -1px;
+        background-color: #f8f9fa;
+        border-radius: 5px 5px 0 0;
+      }
+      .tab.active {
+        background-color: white;
+        border-color: #ddd;
+        border-bottom-color: white;
+        font-weight: bold;
+      }
+      .tab-content {
+        display: none;
+      }
+      .tab-content.active {
+        display: block;
+      }
+      .filter-container {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+      }
+      .filter-container input {
+        flex-grow: 1;
+      }
+      .filter-container select {
+        width: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Calculadora de Lucro Líquido</h1>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="calculadora">Calculadora</div>
+      <div class="tab" data-tab="produtos">Meus Produtos</div>
+    </div>
+
+    <div id="calculadora" class="tab-content active">
+      <div class="card">
+        <div class="form-group">
+          <label for="produto-nome">Nome do Produto</label>
+          <input
+            type="text"
+            id="produto-nome"
+            placeholder="Ex: Smartphone XYZ"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="produto-descricao">Descrição do Produto</label>
+          <textarea
+            id="produto-descricao"
+            placeholder="Insira uma descrição detalhada do produto..."
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="produto-categoria">Categoria</label>
+          <input
+            type="text"
+            id="produto-categoria"
+            placeholder="Ex: Eletrônicos"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="preco-custo">Preço de Custo (R$)</label>
+          <input
+            type="number"
+            id="preco-custo"
+            min="0"
+            step="0.01"
+            placeholder="0.00"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="preco-venda">Preço de Venda (R$)</label>
+          <input
+            type="number"
+            id="preco-venda"
+            min="0"
+            step="0.01"
+            placeholder="0.00"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="tipo-anuncio">Tipo de Anúncio</label>
+          <select id="tipo-anuncio">
+            <option value="classico">Clássico</option>
+            <option value="premium">Premium</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="taxa-anuncio">Taxa do Anúncio (%)</label>
+          <input
+            type="number"
+            id="taxa-anuncio"
+            min="0"
+            max="100"
+            step="0.01"
+            placeholder="Ex: 10.5"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="taxa-publicidade">Taxa de Publicidade (%)</label>
+          <input
+            type="number"
+            id="taxa-publicidade"
+            min="0"
+            max="100"
+            step="0.01"
+            placeholder="Ex: 5.0"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="taxa-devolucao">Taxa de Devolução (%)</label>
+          <input
+            type="number"
+            id="taxa-devolucao"
+            min="0"
+            max="100"
+            step="0.01"
+            placeholder="Ex: 2.0"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="regime-tributario"
+            >Regime Tributário
+            <span class="tooltip"
+              >ⓘ
+              <span class="tooltip-text"
+                >Escolha o regime tributário para calcular os impostos
+                corretamente.</span
+              >
+            </span>
+          </label>
+          <select id="regime-tributario">
+            <option value="simples">Simples Nacional</option>
+            <option value="lucro-presumido">Lucro Presumido</option>
+            <option value="lucro-real">Lucro Real</option>
+            <option value="mei">MEI</option>
+          </select>
+          <div class="regime-info" id="regime-info"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="taxa-imposto"
+            >Taxa de Imposto Manual (%)
+            <span class="tooltip"
+              >ⓘ
+              <span class="tooltip-text"
+                >Opcional: Se preferir inserir uma taxa de imposto específica em
+                vez de usar o regime tributário selecionado.</span
+              >
+            </span>
+          </label>
+          <input
+            type="number"
+            id="taxa-imposto"
+            min="0"
+            max="100"
+            step="0.01"
+            placeholder="Opcional"
+          />
+        </div>
+
+        <div class="button-container">
+          <button id="calcular">Calcular</button>
+          <button id="salvar-produto" class="success">Salvar Produto</button>
+          <button id="limpar-form" class="secondary">Limpar</button>
+        </div>
+
+        <input type="hidden" id="produto-id" value="" />
+      </div>
+
+      <div class="card results hidden" id="resultados">
+        <h2>Resultados</h2>
+
+        <div class="result-item">
+          <div class="result-label">Preço de Venda:</div>
+          <div class="result-value" id="result-preco-venda">R$ 0,00</div>
+        </div>
+
+        <div class="result-item">
+          <div class="result-label">Preço de Custo:</div>
+          <div class="result-value" id="result-preco-custo">R$ 0,00</div>
+        </div>
+
+        <div class="result-item">
+          <div class="result-label">Taxa Fixa:</div>
+          <div class="result-value" id="result-taxa-fixa">R$ 0,00</div>
+        </div>
+
+        <div class="result-item">
+          <div class="result-label">Taxa do Anúncio:</div>
+          <div class="result-value" id="result-taxa-anuncio">R$ 0,00</div>
+        </div>
+
+        <div class="result-item">
+          <div class="result-label">Taxa de Publicidade:</div>
+          <div class="result-value" id="result-taxa-publicidade">R$ 0,00</div>
+        </div>
+
+        <div class="result-item">
+          <div class="result-label">Taxa de Devolução:</div>
+          <div class="result-value" id="result-taxa-devolucao">R$ 0,00</div>
+        </div>
+
+        <div class="result-item">
+          <div class="result-label">Impostos:</div>
+          <div class="result-value" id="result-impostos">R$ 0,00</div>
+        </div>
+
+        <div class="result-item total">
+          <div class="result-label">Lucro Líquido:</div>
+          <div class="result-value" id="result-lucro-liquido">R$ 0,00</div>
+        </div>
+
+        <div class="result-item total">
+          <div class="result-label">Margem de Lucro:</div>
+          <div class="result-value" id="result-margem">0,00%</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="produtos" class="tab-content">
+      <div class="card">
+        <h2>Lista de Produtos</h2>
+
+        <div class="filter-container">
+          <input
+            type="text"
+            id="busca-produto"
+            placeholder="Buscar produto..."
+          />
+          <select id="filtro-categoria">
+            <option value="">Todas as categorias</option>
+          </select>
+        </div>
+
+        <table class="produto-table">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Categoria</th>
+              <th>Preço de Custo</th>
+              <th>Preço de Venda</th>
+              <th>Lucro Líquido</th>
+              <th>Margem</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="lista-produtos">
+            <!-- Os produtos serão inseridos aqui pelo JavaScript -->
+          </tbody>
+        </table>
+
+        <div
+          id="sem-produtos"
+          class="hidden"
+          style="text-align: center; margin-top: 20px; color: #7f8c8d"
+        >
+          Nenhum produto salvo ainda.
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Variáveis globais
+        let produtos = JSON.parse(localStorage.getItem("produtos")) || [];
+        let produtoAtual = null;
+
+        // Elementos DOM
+        const regimeTributarioSelect =
+          document.getElementById("regime-tributario");
+        const regimeInfo = document.getElementById("regime-info");
+        const tabButtons = document.querySelectorAll(".tab");
+        const tabContents = document.querySelectorAll(".tab-content");
+        const produtoIdInput = document.getElementById("produto-id");
+
+        // Inicialização
+        atualizarInfoRegime();
+        atualizarListaProdutos();
+        atualizarCategorias();
+
+        // Event Listeners para abas
+        tabButtons.forEach((button) => {
+          button.addEventListener("click", function () {
+            const tabName = this.getAttribute("data-tab");
+
+            // Ativar botão da aba
+            tabButtons.forEach((btn) => btn.classList.remove("active"));
+            this.classList.add("active");
+
+            // Mostrar conteúdo da aba
+            tabContents.forEach((content) => {
+              content.classList.remove("active");
+              if (content.id === tabName) {
+                content.classList.add("active");
+              }
+            });
+          });
+        });
+
+        // Event Listeners para formulário e botões
+        document
+          .getElementById("calcular")
+          .addEventListener("click", calcularLucro);
+        document
+          .getElementById("salvar-produto")
+          .addEventListener("click", salvarProduto);
+        document
+          .getElementById("limpar-form")
+          .addEventListener("click", limparFormulario);
+        regimeTributarioSelect.addEventListener("change", atualizarInfoRegime);
+
+        // Filtro de busca
+        document
+          .getElementById("busca-produto")
+          .addEventListener("input", filtrarProdutos);
+        document
+          .getElementById("filtro-categoria")
+          .addEventListener("change", filtrarProdutos);
+
+        // Função para atualizar a informação sobre o regime tributário
+        function atualizarInfoRegime() {
+          const regime = regimeTributarioSelect.value;
+          let infoText = "";
+
+          switch (regime) {
+            case "simples":
+              infoText =
+                "Alíquota média aproximada de 8% a 16%, dependendo da faixa de faturamento.";
+              break;
+            case "lucro-presumido":
+              infoText =
+                "Aproximadamente 11.33% (PIS/COFINS 3.65% + ISS 5% + IRPJ/CSLL 2.68%).";
+              break;
+            case "lucro-real":
+              infoText =
+                "Aproximadamente 14.25% (PIS/COFINS 9.25% + IRPJ/CSLL 5% calculados sobre o lucro).";
+              break;
+            case "mei":
+              infoText = "Apenas o DAS mensal. Sem percentual sobre vendas.";
+              break;
+          }
+
+          regimeInfo.textContent = infoText;
+        }
+
+        // Função para calcular o lucro
+        function calcularLucro() {
+          // Obter valores dos inputs
+          const nome = document.getElementById("produto-nome").value;
+          const descricao = document.getElementById("produto-descricao").value;
+          const categoria = document.getElementById("produto-categoria").value;
+          const precoCusto =
+            parseFloat(document.getElementById("preco-custo").value) || 0;
+          const precoVenda =
+            parseFloat(document.getElementById("preco-venda").value) || 0;
+          const tipoAnuncio = document.getElementById("tipo-anuncio").value;
+          const taxaAnuncio =
+            parseFloat(document.getElementById("taxa-anuncio").value) || 0;
+          const taxaPublicidade =
+            parseFloat(document.getElementById("taxa-publicidade").value) || 0;
+          const taxaDevolucao =
+            parseFloat(document.getElementById("taxa-devolucao").value) || 0;
+          const regimeTributario =
+            document.getElementById("regime-tributario").value;
+          const taxaImpostoManual = parseFloat(
+            document.getElementById("taxa-imposto").value
+          );
+
+          // Calcular taxa fixa com base no preço de venda
+          let taxaFixa = 0;
+          if (precoVenda < 29) {
+            taxaFixa = 6.25;
+          } else if (precoVenda < 79) {
+            taxaFixa = 6.5;
+          } else {
+            taxaFixa = 22.45;
+          }
+
+          // Calcular taxa do anúncio
+          const valorTaxaAnuncio = (precoVenda * taxaAnuncio) / 100;
+
+          // Calcular taxa de publicidade
+          const valorTaxaPublicidade = (precoVenda * taxaPublicidade) / 100;
+
+          // Calcular taxa de devolução
+          const valorTaxaDevolucao = (precoVenda * taxaDevolucao) / 100;
+
+          // Determinar taxa de imposto com base no regime tributário ou usar valor manual
+          let taxaImposto = 0;
+          if (!isNaN(taxaImpostoManual)) {
+            taxaImposto = taxaImpostoManual;
+          } else {
+            switch (regimeTributario) {
+              case "simples":
+                taxaImposto = 12; // Valor médio estimado
+                break;
+              case "lucro-presumido":
+                taxaImposto = 11.33;
+                break;
+              case "lucro-real":
+                taxaImposto = 14.25;
+                break;
+              case "mei":
+                taxaImposto = 0;
+                break;
+            }
+          }
+
+          // Calcular valor dos impostos
+          const valorImpostos = (precoVenda * taxaImposto) / 100;
+
+          // Calcular lucro líquido
+          const lucroLiquido =
+            precoVenda -
+            precoCusto -
+            taxaFixa -
+            valorTaxaAnuncio -
+            valorTaxaPublicidade -
+            valorTaxaDevolucao -
+            valorImpostos;
+
+          // Calcular margem de lucro em porcentagem
+          const margemLucro = (lucroLiquido / precoVenda) * 100;
+
+          // Exibir resultados
+          document.getElementById(
+            "result-preco-venda"
+          ).textContent = `R$ ${precoVenda.toFixed(2)}`;
+          document.getElementById(
+            "result-preco-custo"
+          ).textContent = `R$ ${precoCusto.toFixed(2)}`;
+          document.getElementById(
+            "result-taxa-fixa"
+          ).textContent = `R$ ${taxaFixa.toFixed(2)}`;
+          document.getElementById(
+            "result-taxa-anuncio"
+          ).textContent = `R$ ${valorTaxaAnuncio.toFixed(2)} (${taxaAnuncio}%)`;
+          document.getElementById(
+            "result-taxa-publicidade"
+          ).textContent = `R$ ${valorTaxaPublicidade.toFixed(
+            2
+          )} (${taxaPublicidade}%)`;
+          document.getElementById(
+            "result-taxa-devolucao"
+          ).textContent = `R$ ${valorTaxaDevolucao.toFixed(
+            2
+          )} (${taxaDevolucao}%)`;
+          document.getElementById(
+            "result-impostos"
+          ).textContent = `R$ ${valorImpostos.toFixed(2)} (${taxaImposto}%)`;
+
+          const resultLucroLiquido = document.getElementById(
+            "result-lucro-liquido"
+          );
+          resultLucroLiquido.textContent = `R$ ${lucroLiquido.toFixed(2)}`;
+          resultLucroLiquido.className =
+            lucroLiquido >= 0
+              ? "result-value positive"
+              : "result-value negative";
+
+          const resultMargem = document.getElementById("result-margem");
+          resultMargem.textContent = `${margemLucro.toFixed(2)}%`;
+          resultMargem.className =
+            margemLucro >= 0
+              ? "result-value positive"
+              : "result-value negative";
+
+          // Armazenar resultados para eventual salvamento
+          produtoAtual = {
+            nome: nome,
+            descricao: descricao,
+            categoria: categoria,
+            precoCusto: precoCusto,
+            precoVenda: precoVenda,
+            tipoAnuncio: tipoAnuncio,
+            taxaAnuncio: taxaAnuncio,
+            taxaPublicidade: taxaPublicidade,
+            taxaDevolucao: taxaDevolucao,
+            regimeTributario: regimeTributario,
+            taxaImpostoManual: isNaN(taxaImpostoManual)
+              ? null
+              : taxaImpostoManual,
+            taxaFixa: taxaFixa,
+            lucroLiquido: lucroLiquido,
+            margemLucro: margemLucro,
+            dataCriacao: new Date().toISOString(),
+          };
+
+          // Mostrar seção de resultados
+          document.getElementById("resultados").classList.remove("hidden");
+        }
+
+        // Função para salvar um produto
+        function salvarProduto() {
+          if (!produtoAtual) {
+            alert("Calcule o lucro antes de salvar o produto.");
+            return;
+          }
+
+          const nome = document.getElementById("produto-nome").value.trim();
+          if (!nome) {
+            alert("O nome do produto é obrigatório.");
+            return;
+          }
+
+          const produtoId = produtoIdInput.value;
+
+          if (produtoId) {
+            // Edição de produto existente
+            const index = produtos.findIndex((p) => p.id === produtoId);
+            if (index !== -1) {
+              produtoAtual.id = produtoId;
+              produtoAtual.dataAtualizacao = new Date().toISOString();
+              produtos[index] = produtoAtual;
+            }
+          } else {
+            // Novo produto
+            produtoAtual.id = gerarId();
+            produtoAtual.dataCriacao = new Date().toISOString();
+            produtos.push(produtoAtual);
+          }
+
+          // Salvar no localStorage
+          localStorage.setItem("produtos", JSON.stringify(produtos));
+
+          // Atualizar a lista e limpar o formulário
+          atualizarListaProdutos();
+          atualizarCategorias();
+          limparFormulario();
+
+          // Mostrar mensagem de sucesso
+          alert("Produto salvo com sucesso!");
+        }
+
+        // Função para limpar o formulário
+        function limparFormulario() {
+          document.getElementById("produto-nome").value = "";
+          document.getElementById("produto-descricao").value = "";
+          document.getElementById("produto-categoria").value = "";
+          document.getElementById("preco-custo").value = "";
+          document.getElementById("preco-venda").value = "";
+          document.getElementById("tipo-anuncio").value = "classico";
+          document.getElementById("taxa-anuncio").value = "";
+          document.getElementById("taxa-publicidade").value = "";
+          document.getElementById("taxa-devolucao").value = "";
+          document.getElementById("regime-tributario").value = "simples";
+          document.getElementById("taxa-imposto").value = "";
+          document.getElementById("resultados").classList.add("hidden");
+          produtoIdInput.value = "";
+          produtoAtual = null;
+          atualizarInfoRegime();
+        }
+
+        // Função para atualizar a lista de produtos
+        function atualizarListaProdutos() {
+          const listaProdutos = document.getElementById("lista-produtos");
+          const semProdutos = document.getElementById("sem-produtos");
+
+          // Limpar a lista
+          listaProdutos.innerHTML = "";
+
+          if (produtos.length === 0) {
+            semProdutos.classList.remove("hidden");
+            return;
+          }
+
+          semProdutos.classList.add("hidden");
+
+          // Ordenar produtos pelo nome
+          produtos.sort((a, b) => a.nome.localeCompare(b.nome));
+
+          // Adicionar cada produto à lista
+          produtos.forEach((produto) => {
+            const tr = document.createElement("tr");
+
+            tr.innerHTML = `
+                        <td>${produto.nome}</td>
+                        <td>${produto.categoria || "-"}</td>
+                        <td>R$ ${produto.precoCusto.toFixed(2)}</td>
+                        <td>R$ ${produto.precoVenda.toFixed(2)}</td>
+                        <td class="${
+                          produto.lucroLiquido >= 0 ? "positive" : "negative"
+                        }">
+                            R$ ${produto.lucroLiquido.toFixed(2)}
+                        </td>
+                        <td class="${
+                          produto.margemLucro >= 0 ? "positive" : "negative"
+                        }">
+                            ${produto.margemLucro.toFixed(2)}%
+                        </td>
+                        <td class="action-buttons">
+                            <button class="action-button edit-button" data-id="${
+                              produto.id
+                            }">Editar</button>
+                            <button class="action-button delete-button" data-id="${
+                              produto.id
+                            }">Excluir</button>
+                        </td>
+                    `;
+
+            listaProdutos.appendChild(tr);
+          });
+
+          // Adicionar event listeners para os botões de ação
+          document.querySelectorAll(".edit-button").forEach((button) => {
+            button.addEventListener("click", (e) => {
+              const id = e.target.getAttribute("data-id");
+              carregarProduto(id);
+
+              // Mudar para a aba de calculadora
+              document.querySelector('.tab[data-tab="calculadora"]').click();
+            });
+          });
+
+          document.querySelectorAll(".delete-button").forEach((button) => {
+            button.addEventListener("click", (e) => {
+              const id = e.target.getAttribute("data-id");
+              excluirProduto(id);
+            });
+          });
+        }
+
+        // Função para carregar um produto para edição
+        function carregarProduto(id) {
+          const produto = produtos.find((p) => p.id === id);
+          if (!produto) return;
+
+          document.getElementById("produto-nome").value = produto.nome;
+          document.getElementById("produto-descricao").value =
+            produto.descricao || "";
+          document.getElementById("produto-categoria").value =
+            produto.categoria || "";
+          document.getElementById("preco-custo").value = produto.precoCusto;
+          document.getElementById("preco-venda").value = produto.precoVenda;
+          document.getElementById("tipo-anuncio").value = produto.tipoAnuncio;
+          document.getElementById("taxa-anuncio").value = produto.taxaAnuncio;
+          document.getElementById("taxa-publicidade").value =
+            produto.taxaPublicidade;
+          document.getElementById("taxa-devolucao").value =
+            produto.taxaDevolucao;
+          document.getElementById("regime-tributario").value =
+            produto.regimeTributario;
+          document.getElementById("taxa-imposto").value =
+            produto.taxaImpostoManual || "";
+          produtoIdInput.value = produto.id;
+
+          // Recalcular para mostrar os resultados
+          calcularLucro();
+        }
+
+        // Função para excluir um produto
+        function excluirProduto(id) {
+          if (!confirm("Tem certeza que deseja excluir este produto?")) return;
+
+          const index = produtos.findIndex((p) => p.id === id);
+          if (index !== -1) {
+            produtos.splice(index, 1);
+            localStorage.setItem("produtos", JSON.stringify(produtos));
+            atualizarListaProdutos();
+            atualizarCategorias();
+          }
+        }
+
+        // Função para filtrar produtos
+        function filtrarProdutos() {
+          const busca = document
+            .getElementById("busca-produto")
+            .value.toLowerCase();
+          const categoria = document.getElementById("filtro-categoria").value;
+
+          // Filtrar por texto e categoria
+          const produtosFiltrados = produtos.filter((produto) => {
+            const nomeMatch = produto.nome.toLowerCase().includes(busca);
+            const descricaoMatch = (produto.descricao || "")
+              .toLowerCase()
+              .includes(busca);
+            const categoriaMatch =
+              !categoria || produto.categoria === categoria;
+            return (nomeMatch || descricaoMatch) && categoriaMatch;
+          });
+
+          const listaProdutos = document.getElementById("lista-produtos");
+          const semProdutos = document.getElementById("sem-produtos");
+
+          // Limpar a lista
+          listaProdutos.innerHTML = "";
+
+          if (produtosFiltrados.length === 0) {
+            semProdutos.classList.remove("hidden");
+            semProdutos.textContent =
+              "Nenhum produto encontrado com os filtros aplicados.";
+            return;
+          }
+
+          semProdutos.classList.add("hidden");
+
+          // Ordenar produtos pelo nome
+          produtosFiltrados.sort((a, b) => a.nome.localeCompare(b.nome));
+
+          // Adicionar cada produto à lista
+          produtosFiltrados.forEach((produto) => {
+            const tr = document.createElement("tr");
+
+            tr.innerHTML = `
+                        <td>${produto.nome}</td>
+                        <td>${produto.categoria || "-"}</td>
+                        <td>R$ ${produto.precoCusto.toFixed(2)}</td>
+                        <td>R$ ${produto.precoVenda.toFixed(2)}</td>
+                        <td class="${
+                          produto.lucroLiquido >= 0 ? "positive" : "negative"
+                        }">
+                            R$ ${produto.lucroLiquido.toFixed(2)}
+                        </td>
+                        <td class="${
+                          produto.margemLucro >= 0 ? "positive" : "negative"
+                        }">
+                            ${produto.margemLucro.toFixed(2)}%
+                        </td>
+                        <td class="action-buttons">
+                            <button class="action-button edit-button" data-id="${
+                              produto.id
+                            }">Editar</button>
+                            <button class="action-button delete-button" data-id="${
+                              produto.id
+                            }">Excluir</button>
+                        </td>
+                    `;
+
+            listaProdutos.appendChild(tr);
+          });
+
+          // Adicionar event listeners para os botões de ação
+          document.querySelectorAll(".edit-button").forEach((button) => {
+            button.addEventListener("click", (e) => {
+              const id = e.target.getAttribute("data-id");
+              carregarProduto(id);
+
+              // Mudar para a aba de calculadora
+              document.querySelector('.tab[data-tab="calculadora"]').click();
+            });
+          });
+
+          document.querySelectorAll(".delete-button").forEach((button) => {
+            button.addEventListener("click", (e) => {
+              const id = e.target.getAttribute("data-id");
+              excluirProduto(id);
+            });
+          });
+        }
+
+        // Função para atualizar o dropdown de categorias
+        function atualizarCategorias() {
+          const filtroCategoria = document.getElementById("filtro-categoria");
+
+          // Obter categorias únicas
+          const categorias = [
+            ...new Set(
+              produtos
+                .map((p) => p.categoria)
+                .filter((c) => c && c.trim() !== "")
+            ),
+          ].sort();
+
+          // Salvar a seleção atual
+          const selecaoAtual = filtroCategoria.value;
+
+          // Limpar opções
+          filtroCategoria.innerHTML = "";
+
+          // Opção padrão
+          const opcaoPadrao = document.createElement("option");
+          opcaoPadrao.value = "";
+          opcaoPadrao.textContent = "Todas as categorias";
+          filtroCategoria.appendChild(opcaoPadrao);
+
+          // Adicionar categorias
+          categorias.forEach((categoria) => {
+            const opcao = document.createElement("option");
+            opcao.value = categoria;
+            opcao.textContent = categoria;
+            filtroCategoria.appendChild(opcao);
+          });
+
+          // Restaurar seleção se ainda existir
+          if (categorias.includes(selecaoAtual)) {
+            filtroCategoria.value = selecaoAtual;
+          }
+        }
+
+        // Função para gerar ID único
+        function gerarId() {
+          return (
+            "id_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9)
+          );
+        }
+      });
+    </script>
+  </body>
+</html>
